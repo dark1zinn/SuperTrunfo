@@ -32,6 +32,73 @@ int exibirMenu()
        return opcao;
 }
 
+// Função para exibir o menu de opções, excluindo uma opção já escolhida
+int exibirMenuSegundoAtributo(int primeiraEscolha)
+{
+       int opcao;
+       printf("\n\nEscolha o segundo atributo para comparação:\n");
+       if (primeiraEscolha != 1)
+              printf("1 - População\n");
+       if (primeiraEscolha != 2)
+              printf("2 - Área\n");
+       if (primeiraEscolha != 3)
+              printf("3 - PIB\n");
+       if (primeiraEscolha != 4)
+              printf("4 - Pontos Turísticos\n");
+       if (primeiraEscolha != 5)
+              printf("5 - Densidade Populacional\n");
+       if (primeiraEscolha != 6)
+              printf("6 - PIB per Capita\n");
+       printf("0 - Sair\n");
+       printf("Sua escolha: ");
+       scanf("%d", &opcao);
+       return opcao == primeiraEscolha ? 0 : opcao;
+}
+
+// Função para obter o valor do atributo baseado na opção
+float obterValorAtributo(struct Carta carta, int opcao)
+{
+       switch (opcao)
+       {
+       case 1:
+              return (float)carta.populacao;
+       case 2:
+              return carta.area;
+       case 3:
+              return carta.pib;
+       case 4:
+              return (float)carta.pontosTuristicos;
+       case 5:
+              return carta.densidadePopulacional;
+       case 6:
+              return carta.pibPerCapita;
+       default:
+              return 0.0f;
+       }
+}
+
+// Função para obter o nome do atributo
+const char *obterNomeAtributo(int opcao)
+{
+       switch (opcao)
+       {
+       case 1:
+              return "População";
+       case 2:
+              return "Área";
+       case 3:
+              return "PIB";
+       case 4:
+              return "Pontos Turísticos";
+       case 5:
+              return "Densidade Populacional";
+       case 6:
+              return "PIB per Capita";
+       default:
+              return "Desconhecido";
+       }
+}
+
 // Função genérica para exibir resultado da comparação
 void exibirResultadoComparacao(const char *atributo, const char *cidade1, const char *cidade2,
                                float valor1, float valor2, int menorVence)
@@ -90,6 +157,52 @@ void compararCartas(struct Carta carta1, struct Carta carta2, int opcao)
 
        default:
               printf("\nOpção inválida!\n");
+       }
+}
+
+void compararCartasDoisAtributos(struct Carta carta1, struct Carta carta2, int opcao1, int opcao2)
+{
+       float valor1_atr1 = obterValorAtributo(carta1, opcao1);
+       float valor2_atr1 = obterValorAtributo(carta2, opcao1);
+       float valor1_atr2 = obterValorAtributo(carta1, opcao2);
+       float valor2_atr2 = obterValorAtributo(carta2, opcao2);
+
+       // Ajusta valores para densidade populacional (menor é melhor)
+       if (opcao1 == 5)
+       {
+              valor1_atr1 = -valor1_atr1;
+              valor2_atr1 = -valor2_atr1;
+       }
+       if (opcao2 == 5)
+       {
+              valor1_atr2 = -valor1_atr2;
+              valor2_atr2 = -valor2_atr2;
+       }
+
+       float soma1 = valor1_atr1 + valor1_atr2;
+       float soma2 = valor2_atr1 + valor2_atr2;
+
+       printf("\nComparação de cartas com dois atributos:\n");
+       printf("\nCarta 1 - %s:", carta1.cidade);
+       printf("\n%s: %.2f", obterNomeAtributo(opcao1), valor1_atr1);
+       printf("\n%s: %.2f", obterNomeAtributo(opcao2), valor1_atr2);
+       printf("\nSoma: %.2f", soma1);
+
+       printf("\n\nCarta 2 - %s:", carta2.cidade);
+       printf("\n%s: %.2f", obterNomeAtributo(opcao1), valor2_atr1);
+       printf("\n%s: %.2f", obterNomeAtributo(opcao2), valor2_atr2);
+       printf("\nSoma: %.2f", soma2);
+
+       printf("\n\nResultado: ");
+       if (soma1 == soma2)
+       {
+              printf("Empate!\n");
+       }
+       else
+       {
+              printf("Carta %d (%s) venceu!\n",
+                     (soma1 > soma2) ? 1 : 2,
+                     (soma1 > soma2) ? carta1.cidade : carta2.cidade);
        }
 }
 
@@ -173,14 +286,19 @@ int main()
        printf("PIB per Capita: %.2f reais\n", carta2.pibPerCapita);
 
        // Loop do menu
+       int opcao1, opcao2;
        do
        {
-              opcao = exibirMenu();
-              if (opcao != 0)
+              opcao1 = exibirMenu();
+              if (opcao1 != 0)
               {
-                     compararCartas(carta1, carta2, opcao);
+                     opcao2 = exibirMenuSegundoAtributo(opcao1);
+                     if (opcao2 != 0)
+                     {
+                            compararCartasDoisAtributos(carta1, carta2, opcao1, opcao2);
+                     }
               }
-       } while (opcao != 0);
+       } while (opcao1 != 0);
 
        return 0;
 }
